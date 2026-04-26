@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>雷諾曼占卜</title>
+
+<style>
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #0f172a, #020617);
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    text-align: center;
+  }
+
+  h1 {
+    margin: 20px 0 10px;
+    font-size: 22px;
+    letter-spacing: 2px;
+  }
+
+  input {
+    width: 85%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    margin: 10px 0;
+    font-size: 15px;
+  }
+
+  .controls {
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  .hint {
+    color: #aaa;
+    font-size: 12px;
+  }
+
+  button {
+    width: 85%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    background: #6366f1;
+    color: white;
+  }
+
+  button.secondary {
+    background: #334155;
+  }
+
+  #result {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .card {
+    width: 90px;
+    height: 130px;
+    margin: 6px;
+    perspective: 1000px;
+  }
+
+  .inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+  }
+
+  .flip {
+    transform: rotateY(180deg);
+  }
+
+  .front, .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+  }
+
+  .front {
+    background: #1e293b;
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .back {
+    background: linear-gradient(135deg, #6366f1, #9333ea);
+  }
+
+</style>
+</head>
+
+<body>
+
+<h1>🔮 LENORMAND</h1>
+
+<input id="question" placeholder="輸入你的問題（可不填）">
+
+<div class="controls">
+  <label>
+    <input type="radio" name="count" value="3" checked>
+    三張牌 <span class="hint">快速</span>
+  </label>
+  <br>
+  <label>
+    <input type="radio" name="count" value="5">
+    五張牌 <span class="hint">深入</span>
+  </label>
+</div>
+
+<button onclick="drawCards()">抽牌</button>
+<button class="secondary" onclick="copyResult()">複製結果</button>
+
+<div id="result"></div>
+
+<script>
+const deck = [
+"騎士","幸運草","船","房子","樹","雲","蛇","棺材","花束",
+"鐮刀","鞭子","鳥","小孩","狐狸","熊","星星","鸛","狗",
+"塔","花園","山","道路","老鼠","心","戒指","書","信",
+"男人","女人","百合","太陽","月亮","鑰匙","魚","錨","十字架"
+];
+
+let lastDraw = [];
+
+function drawCards() {
+  const count = parseInt(document.querySelector('input[name="count"]:checked').value);
+  const result = document.getElementById("result");
+  result.innerHTML = "";
+
+  let selected = [];
+
+  while (selected.length < count) {
+    let card = deck[Math.floor(Math.random() * deck.length)];
+    if (!selected.includes(card)) selected.push(card);
+  }
+
+  lastDraw = selected;
+
+  setTimeout(() => {
+    selected.forEach((card, index) => {
+
+      setTimeout(() => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card";
+
+        cardDiv.innerHTML = `
+          <div class="inner">
+            <div class="front">${card}</div>
+            <div class="back"></div>
+          </div>
+        `;
+
+        result.appendChild(cardDiv);
+
+        // 翻牌動畫
+        setTimeout(() => {
+          cardDiv.querySelector(".inner").classList.add("flip");
+        }, 200);
+
+      }, index * 1200);
+
+    });
+  }, 500);
+}
+
+function copyResult() {
+  if (lastDraw.length === 0) {
+    alert("請先抽牌");
+    return;
+  }
+
+  const q = document.getElementById("question").value.trim();
+
+  let text = "";
+
+  if (q) text += `我的問題是：${q}\n`;
+
+  text += `我抽到的雷諾曼牌是：${lastDraw.join("、")}。\n請幫我解讀這組牌的意思。`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert("已複製");
+  });
+}
+</script>
+
+</body>
+</html>
