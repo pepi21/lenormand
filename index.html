@@ -92,12 +92,10 @@
     backface-visibility: hidden;
   }
 
-  /* ✅ 修正重點：避免鏡像 */
   .front {
     background: #1e293b;
     font-size: 12px;
     padding: 6px;
-    transform: rotateY(180deg);
   }
 
   .back {
@@ -154,13 +152,10 @@ function drawCards() {
 
   lastDraw = selected;
 
-  // 初始延遲 0.5 秒
   setTimeout(() => {
-
     selected.forEach((card, index) => {
 
       setTimeout(() => {
-
         const cardDiv = document.createElement("div");
         cardDiv.className = "card";
 
@@ -173,7 +168,7 @@ function drawCards() {
 
         result.appendChild(cardDiv);
 
-        // 翻牌
+        // 翻牌動畫
         setTimeout(() => {
           cardDiv.querySelector(".inner").classList.add("flip");
         }, 200);
@@ -181,7 +176,6 @@ function drawCards() {
       }, index * 1200);
 
     });
-
   }, 500);
 }
 
