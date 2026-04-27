@@ -2,21 +2,18 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>雷諾曼抽牌</title>
   <style>
     :root {
       --bg1: #0b1020;
       --bg2: #111827;
       --panel: rgba(17, 24, 39, 0.72);
-      --panel-2: rgba(30, 41, 59, 0.9);
       --line: rgba(255, 255, 255, 0.12);
       --text: #f8fafc;
       --muted: #cbd5e1;
       --accent: #7c3aed;
       --accent-2: #4f46e5;
-      --card: #1f2937;
-      --card-back: linear-gradient(135deg, #7c3aed, #4f46e5);
       --shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
       --radius: 18px;
     }
@@ -385,7 +382,7 @@
       return picked;
     }
 
-    function renderBackCard() {
+    function createCardShell() {
       const cardDiv = document.createElement("div");
       cardDiv.className = "card";
       cardDiv.innerHTML = `
@@ -399,26 +396,7 @@
           </div>
         </div>
       `;
-      resultEl.appendChild(cardDiv);
-      return cardDiv.querySelector(".inner");
-    }
-
-    function renderFrontCard(name) {
-      const cardDiv = document.createElement("div");
-      cardDiv.className = "card";
-      cardDiv.innerHTML = `
-        <div class="inner">
-          <div class="face back"></div>
-          <div class="face front">
-            <div>
-              <div class="name">${name}</div>
-              <div class="num">LENORMAND</div>
-            </div>
-          </div>
-        </div>
-      `;
-      resultEl.appendChild(cardDiv);
-      return cardDiv.querySelector(".inner");
+      return cardDiv;
     }
 
     function drawCards() {
@@ -434,32 +412,22 @@
       const selected = pickCards(count);
       lastDraw = selected;
 
-      const placeholders = [];
+      const cardShells = [];
 
-      // 先放出卡背，讓畫面不會空掉
       for (let i = 0; i < count; i++) {
-        placeholders.push(renderBackCard());
+        const shell = createCardShell();
+        resultEl.appendChild(shell);
+        cardShells.push(shell);
       }
 
-      // 初始延遲 0.5 秒後開始翻牌
       setTimeout(() => {
         selected.forEach((card, index) => {
           setTimeout(() => {
-            const cardEl = placeholders[index];
-            if (!cardEl) return;
+            const shell = cardShells[index];
+            const frontName = shell.querySelector(".front .name");
+            frontName.textContent = card;
 
-            // 翻開前先換成牌面文字
-            cardEl.parentElement.innerHTML = `
-              <div class="face back"></div>
-              <div class="face front">
-                <div>
-                  <div class="name">${card}</div>
-                  <div class="num">LENORMAND</div>
-                </div>
-              </div>
-            `;
-
-            cardEl.classList.add("flip");
+            shell.querySelector(".inner").classList.add("flip");
 
             if (index === selected.length - 1) {
               setStatus("抽牌完成。可直接複製結果。");
@@ -470,7 +438,6 @@
         });
       }, 500);
 
-      // 保底：避免極端情況按鈕卡死
       const totalTime = 500 + (count - 1) * 1200 + 900;
       setTimeout(() => {
         drawBtn.disabled = false;
@@ -493,40 +460,26 @@
       text += `我抽到的雷諾曼牌是：${lastDraw.join("、")}。\n請幫我解讀這組牌的意思。`;
 
       try {
-        await copyText(text);
-        setStatus("已複製到剪貼簿。");
-      } catch (err) {
-        setStatus("複製失敗，已改用提示框。");
-        window.prompt("長按或全選複製以下內容：", text);
-      }
-    }
-
-    function copyText(text) {
-      if (navigator.clipboard && window.isSecureContext) {
-        return navigator.clipboard.writeText(text);
-      }
-
-      return new Promise((resolve, reject) => {
-        try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
           const ta = document.createElement("textarea");
           ta.value = text;
           ta.setAttribute("readonly", "");
           ta.style.position = "fixed";
-          ta.style.opacity = "0";
           ta.style.left = "-9999px";
+          ta.style.opacity = "0";
           document.body.appendChild(ta);
           ta.select();
           ta.setSelectionRange(0, ta.value.length);
-
-          const ok = document.execCommand("copy");
-          document.body.removeChild(ta);
-
-          if (ok) resolve();
-          else reject(new Error("execCommand copy failed"));
-        } catch (e) {
-          reject(e);
+          document.execCommand("copy");
+          ta.remove();
         }
-      });
+        setStatus("已複製到剪貼簿。");
+      } catch (err) {
+        setStatus("複製失敗，請手動複製。");
+        window.prompt("請複製以下內容：", text);
+      }
     }
   </script>
 </body>
