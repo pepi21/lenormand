@@ -201,17 +201,21 @@
     }
 
     .result-wrap {
-      margin-top: 16px;
+      margin-top: 18px;
+      padding-bottom: 24px;
     }
 
     .result-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(102px, 1fr));
+      gap: 12px;
       align-items: stretch;
+      justify-items: center;
     }
 
     .card {
+      width: 100%;
+      max-width: 118px;
       aspect-ratio: 2 / 3;
       perspective: 1000px;
     }
@@ -264,18 +268,20 @@
     }
 
     .front .name {
-      font-size: clamp(13px, 3.5vw, 16px);
+      font-size: clamp(13px, 3.4vw, 16px);
       font-weight: 800;
-      line-height: 1.2;
+      line-height: 1.15;
       letter-spacing: 0.02em;
       word-break: keep-all;
+      overflow-wrap: anywhere;
     }
 
     .front .num {
       margin-top: 6px;
-      font-size: 11px;
+      font-size: 10px;
       color: #cbd5e1;
       opacity: 0.9;
+      letter-spacing: 0.12em;
     }
 
     .footer-note {
@@ -289,6 +295,10 @@
     @media (min-width: 520px) {
       .choices {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .result-grid {
+        grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
       }
     }
   </style>
@@ -346,7 +356,7 @@
     </section>
 
     <div class="footer-note">
-      建議用 Safari 或 Chrome 開啟。若從手機檔案直接開，複製功能已附備援。
+      建議用 Safari 或 Chrome 開啟。
     </div>
   </main>
 
@@ -426,7 +436,6 @@
             const shell = cardShells[index];
             const frontName = shell.querySelector(".front .name");
             frontName.textContent = card;
-
             shell.querySelector(".inner").classList.add("flip");
 
             if (index === selected.length - 1) {
