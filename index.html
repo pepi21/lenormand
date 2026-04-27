@@ -1,203 +1,533 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>雷諾曼抽牌</title>
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #111827;
+      --panel: rgba(17, 24, 39, 0.72);
+      --panel-2: rgba(30, 41, 59, 0.9);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #7c3aed;
+      --accent-2: #4f46e5;
+      --card: #1f2937;
+      --card-back: linear-gradient(135deg, #7c3aed, #4f46e5);
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      --radius: 18px;
+    }
 
-<title>雷諾曼占卜</title>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-<style>
-  body {
-    margin: 0;
-    background: linear-gradient(180deg, #0f172a, #020617);
-    color: white;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    text-align: center;
-  }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top, rgba(124, 58, 237, 0.22), transparent 35%),
+        radial-gradient(circle at 80% 20%, rgba(79, 70, 229, 0.18), transparent 30%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
 
-  h1 {
-    margin: 20px 0 10px;
-    font-size: 22px;
-    letter-spacing: 2px;
-  }
+    body {
+      min-height: 100dvh;
+      padding:
+        calc(14px + env(safe-area-inset-top))
+        calc(14px + env(safe-area-inset-right))
+        calc(18px + env(safe-area-inset-bottom))
+        calc(14px + env(safe-area-inset-left));
+    }
 
-  input {
-    width: 85%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    margin: 10px 0;
-    font-size: 15px;
-  }
+    .app {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+    }
 
-  .controls {
-    margin: 10px 0;
-    font-size: 14px;
-  }
+    .hero {
+      text-align: center;
+      padding: 10px 8px 6px;
+    }
 
-  .hint {
-    color: #aaa;
-    font-size: 12px;
-  }
+    .title {
+      margin: 10px 0 6px;
+      font-size: clamp(26px, 6vw, 34px);
+      line-height: 1.1;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
 
-  button {
-    width: 85%;
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 12px;
-    border: none;
-    font-size: 15px;
-    background: #6366f1;
-    color: white;
-  }
+    .subtitle {
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 36em;
+    }
 
-  button.secondary {
-    background: #334155;
-  }
+    .panel {
+      margin-top: 14px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
 
-  #result {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+    .field {
+      margin-bottom: 12px;
+    }
 
-  .card {
-    width: 90px;
-    height: 130px;
-    margin: 6px;
-    perspective: 1000px;
-  }
+    label.block {
+      display: block;
+      text-align: left;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 8px 2px;
+    }
 
-  .inner {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-  }
+    input[type="text"] {
+      width: 100%;
+      min-height: 48px;
+      padding: 14px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      outline: none;
+      background: rgba(15, 23, 42, 0.72);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.3;
+    }
 
-  .flip {
-    transform: rotateY(180deg);
-  }
+    input[type="text"]::placeholder {
+      color: #94a3b8;
+    }
 
-  .front, .back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backface-visibility: hidden;
-  }
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
 
-  .front {
-    background: #1e293b;
-    font-size: 12px;
-    padding: 6px;
-  }
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.55);
+      cursor: pointer;
+      user-select: none;
+    }
 
-  .back {
-    background: linear-gradient(135deg, #6366f1, #9333ea);
-  }
+    .choice input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
 
-</style>
+    .choice strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+
+    .choice span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      min-height: 48px;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+      touch-action: manipulation;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    button.secondary {
+      background: rgba(51, 65, 85, 0.95);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .hint-row {
+      margin-top: 10px;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+    .status {
+      margin-top: 12px;
+      min-height: 22px;
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .result-wrap {
+      margin-top: 16px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .card {
+      aspect-ratio: 2 / 3;
+      perspective: 1000px;
+    }
+
+    .inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      transition: transform 0.65s ease;
+    }
+
+    .inner.flip {
+      transform: rotateY(180deg);
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 14px 24px rgba(0, 0, 0, 0.22);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .back {
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.18), transparent 30%),
+        radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.12), transparent 24%),
+        linear-gradient(135deg, #6d28d9, #4338ca);
+    }
+
+    .back::before {
+      content: "✦";
+      font-size: 28px;
+      opacity: 0.85;
+    }
+
+    .front {
+      transform: rotateY(180deg);
+      background: linear-gradient(180deg, #182235, #101827);
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .front .name {
+      font-size: clamp(13px, 3.5vw, 16px);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: 0.02em;
+      word-break: keep-all;
+    }
+
+    .front .num {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #cbd5e1;
+      opacity: 0.9;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 520px) {
+      .choices {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <main class="app">
+    <section class="hero">
+      <h1 class="title">雷諾曼抽牌</h1>
+      <p class="subtitle">手機優先版。可輸入問題、選擇 3 / 5 張、逐張翻牌，最後一鍵複製給 AI 解讀。</p>
+    </section>
 
-<h1>🔮 LENORMAND</h1>
+    <section class="panel">
+      <div class="field">
+        <label class="block" for="question">你的問題（可不填）</label>
+        <input id="question" type="text" placeholder="例如：這段關係接下來的發展是什麼？" autocomplete="off" />
+      </div>
 
-<input id="question" placeholder="輸入你的問題（可不填）">
+      <div class="field">
+        <label class="block">抽牌數量</label>
+        <div class="choices">
+          <label class="choice">
+            <input type="radio" name="count" value="3" checked />
+            <div>
+              <strong>三張牌</strong>
+              <span>快速占卜，適合單一問題</span>
+            </div>
+          </label>
 
-<div class="controls">
-  <label>
-    <input type="radio" name="count" value="3" checked>
-    三張牌 <span class="hint">快速</span>
-  </label>
-  <br>
-  <label>
-    <input type="radio" name="count" value="5">
-    五張牌 <span class="hint">深入</span>
-  </label>
-</div>
+          <label class="choice">
+            <input type="radio" name="count" value="5" />
+            <div>
+              <strong>五張牌</strong>
+              <span>看更完整的脈絡與發展</span>
+            </div>
+          </label>
+        </div>
+      </div>
 
-<button onclick="drawCards()">抽牌</button>
-<button class="secondary" onclick="copyResult()">複製結果</button>
+      <div class="actions">
+        <button id="drawBtn" class="primary" onclick="drawCards()">抽牌</button>
+        <button class="secondary" onclick="copyResult()">複製結果</button>
+      </div>
 
-<div id="result"></div>
+      <div class="hint-row">
+        出牌節奏：先等 0.5 秒，再每張間隔 1.2 秒。<br />
+        複製內容會自動整理成適合丟給 AI 的文字。
+      </div>
 
-<script>
-const deck = [
-"騎士","幸運草","船","房子","樹","雲","蛇","棺材","花束",
-"鐮刀","鞭子","鳥","小孩","狐狸","熊","星星","鸛","狗",
-"塔","花園","山","道路","老鼠","心","戒指","書","信",
-"男人","女人","百合","太陽","月亮","鑰匙","魚","錨","十字架"
-];
+      <div id="status" class="status"></div>
+    </section>
 
-let lastDraw = [];
+    <section class="result-wrap">
+      <div id="result" class="result-grid"></div>
+    </section>
 
-function drawCards() {
-  const count = parseInt(document.querySelector('input[name="count"]:checked').value);
-  const result = document.getElementById("result");
-  result.innerHTML = "";
+    <div class="footer-note">
+      建議用 Safari 或 Chrome 開啟。若從手機檔案直接開，複製功能已附備援。
+    </div>
+  </main>
 
-  let selected = [];
+  <script>
+    const deck = [
+      "騎士","幸運草","船","房子","樹","雲","蛇","棺材","花束",
+      "鐮刀","鞭子","鳥","小孩","狐狸","熊","星星","鸛","狗",
+      "塔","花園","山","道路","老鼠","心","戒指","書","信",
+      "男人","女人","百合","太陽","月亮","鑰匙","魚","錨","十字架"
+    ];
 
-  while (selected.length < count) {
-    let card = deck[Math.floor(Math.random() * deck.length)];
-    if (!selected.includes(card)) selected.push(card);
-  }
+    let lastDraw = [];
+    let isDrawing = false;
 
-  lastDraw = selected;
+    const resultEl = document.getElementById("result");
+    const statusEl = document.getElementById("status");
+    const drawBtn = document.getElementById("drawBtn");
 
-  setTimeout(() => {
-    selected.forEach((card, index) => {
+    function setStatus(text) {
+      statusEl.textContent = text || "";
+    }
 
-      setTimeout(() => {
-        const cardDiv = document.createElement("div");
-        cardDiv.className = "card";
+    function getSelectedCount() {
+      return parseInt(document.querySelector('input[name="count"]:checked').value, 10);
+    }
 
-        cardDiv.innerHTML = `
-          <div class="inner">
-            <div class="front">${card}</div>
-            <div class="back"></div>
+    function pickCards(count) {
+      const picked = [];
+      while (picked.length < count) {
+        const card = deck[Math.floor(Math.random() * deck.length)];
+        if (!picked.includes(card)) picked.push(card);
+      }
+      return picked;
+    }
+
+    function renderBackCard() {
+      const cardDiv = document.createElement("div");
+      cardDiv.className = "card";
+      cardDiv.innerHTML = `
+        <div class="inner">
+          <div class="face back"></div>
+          <div class="face front">
+            <div>
+              <div class="name">準備中</div>
+              <div class="num"> </div>
+            </div>
           </div>
-        `;
+        </div>
+      `;
+      resultEl.appendChild(cardDiv);
+      return cardDiv.querySelector(".inner");
+    }
 
-        result.appendChild(cardDiv);
+    function renderFrontCard(name) {
+      const cardDiv = document.createElement("div");
+      cardDiv.className = "card";
+      cardDiv.innerHTML = `
+        <div class="inner">
+          <div class="face back"></div>
+          <div class="face front">
+            <div>
+              <div class="name">${name}</div>
+              <div class="num">LENORMAND</div>
+            </div>
+          </div>
+        </div>
+      `;
+      resultEl.appendChild(cardDiv);
+      return cardDiv.querySelector(".inner");
+    }
 
-        // 翻牌動畫
-        setTimeout(() => {
-          cardDiv.querySelector(".inner").classList.add("flip");
-        }, 200);
+    function drawCards() {
+      if (isDrawing) return;
 
-      }, index * 1200);
+      isDrawing = true;
+      drawBtn.disabled = true;
+      resultEl.innerHTML = "";
+      lastDraw = [];
+      setStatus("抽牌中…");
 
-    });
-  }, 500);
-}
+      const count = getSelectedCount();
+      const selected = pickCards(count);
+      lastDraw = selected;
 
-function copyResult() {
-  if (lastDraw.length === 0) {
-    alert("請先抽牌");
-    return;
-  }
+      const placeholders = [];
 
-  const q = document.getElementById("question").value.trim();
+      // 先放出卡背，讓畫面不會空掉
+      for (let i = 0; i < count; i++) {
+        placeholders.push(renderBackCard());
+      }
 
-  let text = "";
+      // 初始延遲 0.5 秒後開始翻牌
+      setTimeout(() => {
+        selected.forEach((card, index) => {
+          setTimeout(() => {
+            const cardEl = placeholders[index];
+            if (!cardEl) return;
 
-  if (q) text += `我的問題是：${q}\n`;
+            // 翻開前先換成牌面文字
+            cardEl.parentElement.innerHTML = `
+              <div class="face back"></div>
+              <div class="face front">
+                <div>
+                  <div class="name">${card}</div>
+                  <div class="num">LENORMAND</div>
+                </div>
+              </div>
+            `;
 
-  text += `我抽到的雷諾曼牌是：${lastDraw.join("、")}。\n請幫我解讀這組牌的意思。`;
+            cardEl.classList.add("flip");
 
-  navigator.clipboard.writeText(text).then(() => {
-    alert("已複製");
-  });
-}
-</script>
+            if (index === selected.length - 1) {
+              setStatus("抽牌完成。可直接複製結果。");
+              drawBtn.disabled = false;
+              isDrawing = false;
+            }
+          }, index * 1200);
+        });
+      }, 500);
 
+      // 保底：避免極端情況按鈕卡死
+      const totalTime = 500 + (count - 1) * 1200 + 900;
+      setTimeout(() => {
+        drawBtn.disabled = false;
+        isDrawing = false;
+      }, totalTime);
+    }
+
+    async function copyResult() {
+      if (!lastDraw.length) {
+        setStatus("請先抽牌。");
+        return;
+      }
+
+      const question = document.getElementById("question").value.trim();
+
+      let text = "";
+      if (question) {
+        text += `我的問題是：${question}\n`;
+      }
+      text += `我抽到的雷諾曼牌是：${lastDraw.join("、")}。\n請幫我解讀這組牌的意思。`;
+
+      try {
+        await copyText(text);
+        setStatus("已複製到剪貼簿。");
+      } catch (err) {
+        setStatus("複製失敗，已改用提示框。");
+        window.prompt("長按或全選複製以下內容：", text);
+      }
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+
+      return new Promise((resolve, reject) => {
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+
+          if (ok) resolve();
+          else reject(new Error("execCommand copy failed"));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+  </script>
 </body>
 </html>
